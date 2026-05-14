@@ -1,0 +1,10 @@
+{
+  "name": "pressing-groupe-8-db",
+  "type": "IndexedDB browser database mirror",
+  "note": "Le navigateur stocke la vraie base IndexedDB dans son profil. Ce fichier existe dans le projet pour montrer la structure attendue et peut servir de modele d'export/import.",
+  "stores": ["settings", "businesses", "garments"],
+  "demoLogin": {
+    "email": "demo@pressing-g8.cm",
+    "password": "123456"
+  }
+}
