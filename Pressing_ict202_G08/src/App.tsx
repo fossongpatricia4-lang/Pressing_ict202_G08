@@ -10,7 +10,7 @@ import {
   saveSettings,
 } from './db';
 import { copy } from './i18n';
-import type { AppSettings, Business, Garment, GarmentStatus, Language, PaymentMethod, PaymentStatus } from './types';
+import type { AppSettings, Business, Garment, GarmentStatus, Language, PaymentStatus } from './types';
 
 const blankBusiness = {
   name: '',
@@ -30,7 +30,6 @@ const blankGarment = {
   price: 0,
   rentalPrice: 0,
   paymentStatus: 'unpaid' as PaymentStatus,
-  paymentMethod: 'cash' as PaymentMethod,
   availableForRent: true,
   status: 'dirty' as GarmentStatus,
   image: '',
@@ -40,26 +39,6 @@ const blankGarment = {
 
 const statusKeys: GarmentStatus[] = ['clean', 'dirty', 'washing', 'rented', 'repair'];
 const categories = ['Chemise', 'Robe', 'Costume', 'Pantalon', 'Boubou', 'Veste', 'Drap', 'Autre'];
-const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'King'];
-const paymentMethodOptions: { value: PaymentMethod; label: string }[] = [
-  { value: 'cash', label: 'cash' },
-  { value: 'card', label: 'card' },
-  { value: 'mobile', label: 'mobile' },
-];
-
-function getSuggestedPrice(size: string): number | null {
-  const normalized = size.trim().toLowerCase();
-  const map: Record<string, number> = {
-    xs: 1800,
-    s: 2200,
-    m: 2600,
-    l: 3000,
-    xl: 3400,
-    xxl: 3800,
-    king: 4200,
-  };
-  return map[normalized] ?? null;
-}
 type DemoSample = [string, string, string, string, string, string, number, number, boolean, GarmentStatus, string];
 
 const VISUAL_ASSETS = {
@@ -319,7 +298,6 @@ export default function App() {
       price: garment.price,
       rentalPrice: garment.rentalPrice,
       paymentStatus: garment.paymentStatus ?? 'unpaid',
-      paymentMethod: garment.paymentMethod ?? 'cash',
       availableForRent: garment.availableForRent,
       status: garment.status,
       image: garment.image ?? '',
@@ -570,23 +548,7 @@ export default function App() {
                     {categories.map((category) => <option key={category}>{category}</option>)}
                   </select>
                   <input placeholder={t.color} value={garmentForm.color} onChange={(e) => setGarmentForm({ ...garmentForm, color: e.target.value })} />
-                  <select value={garmentForm.size} onChange={(e) => {
-                    const nextSize = e.target.value;
-                    const suggestion = getSuggestedPrice(nextSize);
-                    setGarmentForm({
-                      ...garmentForm,
-                      size: nextSize,
-                      price: suggestion ?? garmentForm.price,
-                    });
-                  }}>
-                    <option value="">{t.size}</option>
-                    {sizeOptions.map((size) => <option key={size} value={size}>{size}</option>)}
-                  </select>
-                  {garmentForm.size && getSuggestedPrice(garmentForm.size) !== null && (
-                    <small className="hint">
-                      {t.suggestedPrice}: {getSuggestedPrice(garmentForm.size)?.toLocaleString()} FCFA
-                    </small>
-                  )}
+                  <input placeholder={t.size} value={garmentForm.size} onChange={(e) => setGarmentForm({ ...garmentForm, size: e.target.value })} />
                   <input placeholder={t.client} value={garmentForm.clientName} onChange={(e) => setGarmentForm({ ...garmentForm, clientName: e.target.value })} />
                   <input placeholder={t.phone} value={garmentForm.clientPhone} onChange={(e) => setGarmentForm({ ...garmentForm, clientPhone: e.target.value })} />
                   <input type="number" placeholder={t.price} value={garmentForm.price || ''} onChange={(e) => setGarmentForm({ ...garmentForm, price: Number(e.target.value) })} />
@@ -598,11 +560,6 @@ export default function App() {
                   <select value={garmentForm.paymentStatus} onChange={(e) => setGarmentForm({ ...garmentForm, paymentStatus: e.target.value as PaymentStatus })}>
                     <option value="unpaid">{t.unpaid}</option>
                     <option value="paid">{t.paid}</option>
-                  </select>
-                  <select value={garmentForm.paymentMethod} onChange={(e) => setGarmentForm({ ...garmentForm, paymentMethod: e.target.value as PaymentMethod })}>
-                    {paymentMethodOptions.map((method) => (
-                      <option key={method.value} value={method.value}>{t[method.value]}</option>
-                    ))}
                   </select>
                 </div>
                 <label className="checkLine">
@@ -677,7 +634,6 @@ function createDemoGarments(businessId: string): Garment[] {
     price,
     rentalPrice,
     paymentStatus: index % 3 === 0 ? 'paid' : 'unpaid',
-    paymentMethod: index % 3 === 0 ? 'card' : index % 2 === 0 ? 'mobile' : 'cash',
     availableForRent,
     status,
     image,
@@ -823,7 +779,6 @@ function HistoryPanel({
           <p>{selected.clientName || t.client} - {selected.clientPhone || t.phone}</p>
           <p>{t.price}: {selected.price.toLocaleString()} FCFA</p>
           <p>{t.rentalPrice}: {selected.rentalPrice.toLocaleString()} FCFA</p>
-          <p>{t.paymentMethod}: {t[selected.paymentMethod]}</p>
           <span className={`payBadge ${selected.paymentStatus ?? 'unpaid'}`}>{t[selected.paymentStatus ?? 'unpaid']}</span>
           <div className="miniActions">
             <button onClick={() => onStatus(selected, 'clean')}>L</button>
@@ -894,7 +849,6 @@ function GarmentColumn({
               <span>{garment.price.toLocaleString()} FCFA</span>
               <span>{garment.rentalPrice.toLocaleString()} FCFA loc.</span>
             </div>
-            <p className="smallInfo">{t.paymentMethod}: {t[garment.paymentMethod]}</p>
             <div className="cardFlags">
               <span>{garment.availableForRent ? t.available : t.unavailable}</span>
               <span className={`payBadge ${garment.paymentStatus ?? 'unpaid'}`}>{t[garment.paymentStatus ?? 'unpaid']}</span>
