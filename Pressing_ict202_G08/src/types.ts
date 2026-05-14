@@ -2,6 +2,7 @@ export type Language = 'fr' | 'en';
 export type Theme = 'light' | 'dark';
 export type GarmentStatus = 'clean' | 'dirty' | 'washing' | 'rented' | 'repair';
 export type PaymentStatus = 'paid' | 'unpaid';
+export type PaymentMethod = 'cash' | 'card' | 'mobile';
 
 export interface Business {
   id: string;
@@ -32,6 +33,7 @@ export interface Garment {
   price: number;
   rentalPrice: number;
   paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
   availableForRent: boolean;
   status: GarmentStatus;
   image?: string;
